@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Offline Welt-Flaggen Quiz</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #1a1a2e; color: white; }
+        #quiz-card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 400px; color: #333; }
+        #flag-container { height: 180px; display: flex; justify-content: center; align-items: center; margin-bottom: 25px; background: #f8f9fa; border-radius: 12px; border: 1px solid #ddd; overflow: hidden; }
+        #flag-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        button { padding: 15px; cursor: pointer; border: 2px solid #3f51b5; border-radius: 10px; background: white; color: #3f51b5; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        button:hover { background: #3f51b5; color: white; }
+        #score { margin-top: 20px; font-weight: bold; color: #3f51b5; }
+    </style>
+</head>
+<body>
+
+<div id="quiz-card">
+    <h2>Welches Land?</h2>
+    <div id="flag-container">
+        <img id="flag-img" src="" alt="Lade lokale Flagge...">
+    </div>
+    <div class="btn-grid">
+        <button onclick="check(this)"></button>
+        <button onclick="check(this)"></button>
+        <button onclick="check(this)"></button>
+        <button onclick="check(this)"></button>
+    </div>
+    <div id="score">Punkte: 0</div>
+</div>
+
+<script>
+    // Die Liste nutzt die Dateinamen aus deinem flags-Ordner
+    const countries = [
+        {n: "Deutschland", c: "de"}, {n: "Frankreich", c: "fr"}, {n: "Italien", c: "it"},
+        {n: "Spanien", c: "es"}, {n: "USA", c: "us"}, {n: "Japan", c: "jp"},
+        {n: "Brasilien", c: "br"}, {n: "Kanada", c: "ca"}, {n: "Australien", c: "au"},
+        {n: "Großbritannien", c: "gb"}, {n: "Türkei", c: "tr"}, {n: "Griechenland", c: "gr"},
+        {n: "Österreich", c: "at"}, {n: "Schweiz", c: "ch"}, {n: "Niederlande", c: "nl"},
+        {n: "Polen", c: "pl"}, {n: "Portugal", c: "pt"}, {n: "Schweden", c: "se"},
+        {n: "Argentinien", c: "ar"}, {n: "Mexiko", c: "mx"}, {n: "Indien", c: "in"}
+        // Du kannst hier jedes Land ergänzen, das als .png im Ordner liegt
+    ];
+
+    let current;
+    let score = 0;
+
+    function nextQuestion() {
+        current = countries[Math.floor(Math.random() * countries.length)];
+        const img = document.getElementById('flag-img');
+        
+        // Greift auf deinen lokalen "flags" Ordner zu
+        img.src = "flags/" + current.c + ".png";
+
+        let choices = [current.n];
+        while(choices.length < 4) {
+            let r = countries[Math.floor(Math.random() * countries.length)].n;
+            if(!choices.includes(r)) choices.push(r);
+        }
+        choices.sort(() => Math.random() - 0.5);
+
+        const btns = document.querySelectorAll('button');
+        btns.forEach((b, i) => b.innerText = choices[i]);
+    }
+
+    function check(btn) {
+        if(btn.innerText === current.n) {
+            score++;
+            alert("Richtig! 🌟");
+        } else {
+            alert("Falsch! Das war " + current.n);
+        }
+        document.getElementById('score').innerText = "Punkte: " + score;
+        nextQuestion();
+    }
+
+    // Quiz starten
+    window.onload = nextQuestion;
+</script>
+</body>
+</html>
