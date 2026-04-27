@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Welt Quiz Pro - Full Edition</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #1a1a2e; color: white; overflow: hidden; }
+        
+        #top-bar { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 50px; cursor: pointer; border: 2px solid #ffd700; z-index: 100; transition: transform 0.2s; font-size: 20px; }
+        
+        .coin-hop { animation: hop 0.4s ease; }
+        @keyframes hop { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+        #quiz-card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 400px; color: #333; position: relative; min-height: 520px; display: flex; flex-direction: column; justify-content: center; }
+        
+        #menu-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; border-radius: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; }
+        
+        .highscore-text { font-size: 14px; color: #666; margin-top: 5px; }
+
+        #flag-container { height: 180px; display: flex; justify-content: center; align-items: center; margin-bottom: 25px; background: #f8f9fa; border-radius: 12px; border: 1px solid #ddd; overflow: hidden; }
+        #flag-img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        #capital-question { font-size: 28px; font-weight: bold; color: #3f51b5; padding: 10px; }
+        
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        button { padding: 15px; cursor: pointer; border: 2px solid #3f51b5; border-radius: 10px; background: white; color: #3f51b5; font-weight: bold; font-size: 14px; transition: 0.2s; }
+        button:hover:not(:disabled) { background: #3f51b5; color: white; }
+        button:disabled { opacity: 0.3; cursor: not-allowed; }
+        
+        .menu-btn { width: 80%; margin: 10px 0; font-size: 18px; background: #3f51b5; color: white; border: none; }
+        #joker-btn { margin-top: 15px; width: 100%; background: #ffd700; color: #333; border: 2px solid #f1c40f; }
+
+        #score-area { margin-top: 20px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #3f51b5; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div id="top-bar" onclick="openShop()">
+    💰 <span id="coin-count">0</span>
+</div>
+
+<div id="quiz-card">
+    <div id="menu-overlay">
+        <h1 style="color: #3f51b5; margin-bottom: 10px;">Welt Quiz Pro</h1>
+        
+        <button class="menu-btn" onclick="startQuiz('flags')">🚩 Flaggen Quiz</button>
+        <div class="highscore-text">Rekord: <span id="high-flags">0</span></div>
+        
+        <button class="menu-btn" onclick="startQuiz('capitals')" style="margin-top: 20px;">🏙️ Hauptstadt Quiz</button>
+        <div class="highscore-text">Rekord: <span id="high-capitals">0</span></div>
+    </div>
+
+    <h2 id="question-text">Welches Land?</h2>
+    
+    <div id="flag-container">
+        <img id="flag-img" src="" alt="">
+        <div id="capital-question" class="hidden"></div>
+    </div>
+    
+    <div class="btn-grid">
+        <button class="answer-btn" onclick="check(this)"></button>
+        <button class="answer-btn" onclick="check(this)"></button>
+        <button class="answer-btn" onclick="check(this)"></button>
+        <button class="answer-btn" onclick="check(this)"></button>
+    </div>
+
+    <button id="joker-btn" onclick="useJoker()">🃏 50/50 Joker (50 💰)</button>
+
+    <div id="score-area">
+        <span id="score">Punkte: 0</span>
+        <button onclick="backToMenu()" style="padding: 5px 10px; font-size: 10px; border-color: #ccc; color: #666;">Beenden</button>
+    </div>
+</div>
+
+<script>
+    const countries = [
+        {n: "Afghanistan", c: "af", cap: "Kabul"}, {n: "Ägypten", c: "eg", cap: "Kairo"},
+        {n: "Albanien", c: "al", cap: "Tirana"}, {n: "Algerien", c: "dz", cap: "Algier"},
+        {n: "Andorra", c: "ad", cap: "Andorra la Vella"}, {n: "Angola", c: "ao", cap: "Luanda"},
+        {n: "Antigua und Barbuda", c: "ag", cap: "St. John’s"}, {n: "Äquatorialguinea", c: "gq", cap: "Malabo"},
+        {n: "Argentinien", c: "ar", cap: "Buenos Aires"}, {n: "Armenien", c: "am", cap: "Jerewan"},
+        {n: "Aserbaidschan", c: "az", cap: "Baku"}, {n: "Äthiopien", c: "et", cap: "Addis Abeba"},
+        {n: "Australien", c: "au", cap: "Canberra"}, {n: "Bahamas", c: "bs", cap: "Nassau"},
+        {n: "Bahrain", c: "bh", cap: "Manama"}, {n: "Bangladesch", c: "bd", cap: "Dhaka"},
+        {n: "Barbados", c: "bb", cap: "Bridgetown"}, {n: "Belgien", c: "be", cap: "Brüssel"},
+        {n: "Belize", c: "bz", cap: "Belmopan"}, {n: "Benin", c: "bj", cap: "Porto-Novo"},
+        {n: "Bhutan", c: "bt", cap: "Thimphu"}, {n: "Bolivien", c: "bo", cap: "Sucre"},
+        {n: "Bosnien und Herzegowina", c: "ba", cap: "Sarajevo"}, {n: "Botswana", c: "bw", cap: "Gaborone"},
+        {n: "Brasilien", c: "br", cap: "Brasília"}, {n: "Brunei", c: "bn", cap: "Bandar Seri Begawan"},
+        {n: "Bulgarien", c: "bg", cap: "Sofia"}, {n: "Burkina Faso", c: "bf", cap: "Ouagadougou"},
+        {n: "Burundi", c: "bi", cap: "Gitega"}, {n: "Chile", c: "cl", cap: "Santiago de Chile"},
+        {n: "China", c: "cn", cap: "Peking"}, {n: "Costa Rica", c: "cr", cap: "San José"},
+        {n: "Dänemark", c: "dk", cap: "Kopenhagen"}, {n: "Deutschland", c: "de", cap: "Berlin"},
+        {n: "Dominica", c: "dm", cap: "Roseau"}, {n: "Dominikanische Republik", c: "do", cap: "Santo Domingo"},
+        {n: "Dschibuti", c: "dj", cap: "Dschibuti-Stadt"}, {n: "Ecuador", c: "ec", cap: "Quito"},
+        {n: "El Salvador", c: "sv", cap: "San Salvador"}, {n: "Elfenbeinküste", c: "ci", cap: "Yamoussoukro"},
+        {n: "Eritrea", c: "er", cap: "Asmara"}, {n: "Estland", c: "ee", cap: "Tallinn"},
+        {n: "Eswatini", c: "sz", cap: "Mbabane"}, {n: "Fidschi", c: "fj", cap: "Suva"},
+        {n: "Finnland", c: "fi", cap: "Helsinki"}, {n: "Frankreich", c: "fr", cap: "Paris"},
+        {n: "Gabun", c: "ga", cap: "Libreville"}, {n: "Gambia", c: "gm", cap: "Banjul"},
+        {n: "Georgien", c: "ge", cap: "Tiflis"}, {n: "Ghana", c: "gh", cap: "Accra"},
+        {n: "Grenada", c: "gd", cap: "St. George’s"}, {n: "Griechenland", c: "gr", cap: "Athen"},
+        {n: "Guatemala", c: "gt", cap: "Guatemala-Stadt"}, {n: "Guinea", c: "gn", cap: "Conakry"},
+        {n: "Guinea-Bissau", c: "gw", cap: "Bissau"}, {n: "Guyana", c: "gy", cap: "Georgetown"},
+        {n: "Haiti", c: "ht", cap: "Port-au-Prince"}, {n: "Honduras", c: "hn", cap: "Tegucigalpa"},
+        {n: "Indien", c: "in", cap: "Neu-Delhi"}, {n: "Indonesien", c: "id", cap: "Jakarta"},
+        {n: "Irak", c: "iq", cap: "Bagdad"}, {n: "Iran", c: "ir", cap: "Teheran"},
+        {n: "Irland", c: "ie", cap: "Dublin"}, {n: "Island", c: "is", cap: "Reykjavík"},
+        {n: "Israel", c: "il", cap: "Jerusalem"}, {n: "Italien", c: "it", cap: "Rom"},
+        {n: "Jamaika", c: "jm", cap: "Kingston"}, {n: "Japan", c: "jp", cap: "Tokio"},
+        {n: "Jemen", c: "ye", cap: "Sanaa"}, {n: "Jordanien", c: "jo", cap: "Amman"},
+        {n: "Kambodscha", c: "kh", cap: "Phnom Penh"}, {n: "Kamerun", c: "cm", cap: "Yaoundé"},
+        {n: "Kanada", c: "ca", cap: "Ottawa"}, {n: "Kap Verde", c: "cv", cap: "Praia"},
+        {n: "Kasachstan", c: "kz", cap: "Astana"}, {n: "Katar", c: "qa", cap: "Doha"},
+        {n: "Kenia", c: "ke", cap: "Nairobi"}, {n: "Kirgisistan", c: "kg", cap: "Bischkek"},
+        {n: "Kiribati", c: "ki", cap: "South Tarawa"}, {n: "Kolumbien", c: "co", cap: "Bogotá"},
+        {n: "Komoren", c: "km", cap: "Moroni"}, {n: "Kongo (Dem. Rep.)", c: "cd", cap: "Kinshasa"},
+        {n: "Kongo (Rep.)", c: "cg", cap: "Brazzaville"}, {n: "Nordkorea", c: "kp", cap: "Pjöngjang"},
+        {n: "Südkorea", c: "kr", cap: "Seoul"}, {n: "Kroatien", c: "hr", cap: "Zagreb"},
+        {n: "Kuba", c: "cu", cap: "Havanna"}, {n: "Kuwait", c: "kw", cap: "Kuwait-Stadt"},
+        {n: "Laos", c: "la", cap: "Vientiane"}, {n: "Lesotho", c: "ls", cap: "Maseru"},
+        {n: "Lettland", c: "lv", cap: "Riga"}, {n: "Libanon", c: "lb", cap: "Beirut"},
+        {n: "Liberia", c: "lr", cap: "Monrovia"}, {n: "Libyen", c: "ly", cap: "Tripolis"},
+        {n: "Liechtenstein", c: "li", cap: "Vaduz"}, {n: "Litauen", c: "lt", cap: "Vilnius"},
+        {n: "Luxemburg", c: "lu", cap: "Luxemburg"}, {n: "Madagaskar", c: "mg", cap: "Antananarivo"},
+        {n: "Malawi", c: "mw", cap: "Lilongwe"}, {n: "Malaysia", c: "my", cap: "Kuala Lumpur"},
+        {n: "Malediven", c: "mv", cap: "Malé"}, {n: "Mali", c: "ml", cap: "Bamako"},
+        {n: "Malta", c: "mt", cap: "Valletta"}, {n: "Marokko", c: "ma", cap: "Rabat"},
+        {n: "Mauretanien", c: "mr", cap: "Nouakchott"}, {n: "Mauritius", c: "mu", cap: "Port Louis"},
+        {n: "Mexiko", c: "mx", cap: "Mexiko-Stadt"}, {n: "Mikronesien", c: "fm", cap: "Palikir"},
+        {n: "Moldawien", c: "md", cap: "Chișinău"}, {n: "Monaco", c: "mc", cap: "Monaco"},
+        {n: "Mongolei", c: "mn", cap: "Ulaanbaatar"}, {n: "Montenegro", c: "me", cap: "Podgorica"},
+        {n: "Mosambik", c: "mz", cap: "Maputo"}, {n: "Myanmar", c: "mm", cap: "Naypyidaw"},
+        {n: "Namibia", c: "na", cap: "Windhuk"}, {n: "Nauru", c: "nr", cap: "Yaren"},
+        {n: "Nepal", c: "np", cap: "Kathmandu"}, {n: "Neuseeland", c: "nz", cap: "Wellington"},
+        {n: "Nicaragua", c: "ni", cap: "Managua"}, {n: "Niederlande", c: "nl", cap: "Amsterdam"},
+        {n: "Niger", c: "ne", cap: "Niamey"}, {n: "Nigeria", c: "ng", cap: "Abuja"},
+        {n: "Nordmazedonien", c: "mk", cap: "Skopje"}, {n: "Norwegen", c: "no", cap: "Oslo"},
+        {n: "Oman", c: "om", cap: "Maskat"}, {n: "Österreich", c: "at", cap: "Wien"},
+        {n: "Pakistan", c: "pk", cap: "Islamabad"}, {n: "Palästina", c: "ps", cap: "Ramallah"},
+        {n: "Panama", c: "pa", cap: "Panama-Stadt"}, {n: "Papua-Neuguinea", c: "pg", cap: "Port Moresby"},
+        {n: "Paraguay", c: "py", cap: "Asunción"}, {n: "Peru", c: "pe", cap: "Lima"},
+        {n: "Philippinen", c: "ph", cap: "Manila"}, {n: "Polen", c: "pl", cap: "Warschau"},
+        {n: "Portugal", c: "pt", cap: "Lissabon"}, {n: "Ruanda", c: "rw", cap: "Kigali"},
+        {n: "Rumänien", c: "ro", cap: "Bukarest"}, {n: "Russland", c: "ru", cap: "Moskau"},
+        {n: "Salomonen", c: "sb", cap: "Honiara"}, {n: "Sambia", c: "zm", cap: "Lusaka"},
+        {n: "Samoa", c: "ws", cap: "Apia"}, {n: "San Marino", c: "sm", cap: "San Marino"},
+        {n: "Saudi-Arabien", c: "sa", cap: "Riad"}, {n: "Schweden", c: "se", cap: "Stockholm"},
+        {n: "Schweiz", c: "ch", cap: "Bern"}, {n: "Senegal", c: "sn", cap: "Dakar"},
+        {n: "Serbien", c: "rs", cap: "Belgrad"}, {n: "Seychellen", c: "sc", cap: "Victoria"},
+        {n: "Sierra Leone", c: "sl", cap: "Freetown"}, {n: "Simbabwe", c: "zw", cap: "Harare"},
+        {n: "Singapur", c: "sg", cap: "Singapur"}, {n: "Slowakei", c: "sk", cap: "Bratislava"},
+        {n: "Slowenien", c: "si", cap: "Ljubljana"}, {n: "Somalia", c: "so", cap: "Mogadischu"},
+        {n: "Spanien", c: "es", cap: "Madrid"}, {n: "Sri Lanka", c: "lk", cap: "Colombo"},
+        {n: "Südafrika", c: "za", cap: "Pretoria"}, {n: "Sudan", c: "sd", cap: "Khartum"},
+        {n: "Südsudan", c: "ss", cap: "Juba"}, {n: "Suriname", c: "sr", cap: "Paramaribo"},
+        {n: "Syrien", c: "sy", cap: "Damaskus"}, {n: "Tadschikistan", c: "tj", cap: "Duschanbe"},
+        {n: "Taiwan", c: "tw", cap: "Taipeh"}, {n: "Tansania", c: "tz", cap: "Dodoma"},
+        {n: "Thailand", c: "th", cap: "Bangkok"}, {n: "Togo", c: "tg", cap: "Lomé"},
+        {n: "Tonga", c: "to", cap: "Nukuʻalofa"}, {n: "Trinidad und Tobago", c: "tt", cap: "Port of Spain"},
+        {n: "Tschad", c: "td", cap: "N’Djamena"}, {n: "Tschechien", c: "cz", cap: "Prag"},
+        {n: "Tunesien", c: "tn", cap: "Tunis"}, {n: "Türkei", c: "tr", cap: "Ankara"},
+        {n: "Turkmenistan", c: "tm", cap: "Aschgabat"}, {n: "Tuvalu", c: "tv", cap: "Funafuti"},
+        {n: "Uganda", c: "ug", cap: "Kampala"}, {n: "Ukraine", c: "ua", cap: "Kiew"},
+        {n: "Ungarn", c: "hu", cap: "Budapest"}, {n: "Uruguay", c: "uy", cap: "Montevideo"},
+        {n: "Usbekistan", c: "uz", cap: "Taschkent"}, {n: "Vanuatu", c: "vu", cap: "Port Vila"},
+        {n: "Vatikanstadt", c: "va", cap: "Vatikanstadt"}, {n: "Venezuela", c: "ve", cap: "Caracas"},
+        {n: "Vereinigte Arabische Emirate", c: "ae", cap: "Abu Dhabi"}, {n: "USA", c: "us", cap: "Washington D.C."},
+        {n: "Großbritannien", c: "gb", cap: "London"}, {n: "Vietnam", c: "vn", cap: "Hanoi"},
+        {n: "Zentralafrikanische Republik", c: "cf", cap: "Bangui"}, {n: "Zypern", c: "cy", cap: "Nikosia"}
+    ];
+
+    let currentMode = 'flags';
+    let currentQuestion;
+    let score = 0;
+    let coins = parseInt(localStorage.getItem('coins')) || 0;
+    let highFlags = parseInt(localStorage.getItem('highFlags')) || 0;
+    let highCapitals = parseInt(localStorage.getItem('highCapitals')) || 0;
+
+    document.getElementById('coin-count').innerText = coins;
+    updateHighscoreDisplay();
+
+    function updateHighscoreDisplay() {
+        document.getElementById('high-flags').innerText = highFlags;
+        document.getElementById('high-capitals').innerText = highCapitals;
+    }
+
+    function startQuiz(mode) {
+        currentMode = mode;
+        score = 0;
+        document.getElementById('score').innerText = "Punkte: 0";
+        document.getElementById('menu-overlay').classList.add('hidden');
+        
+        if(mode === 'capitals') {
+            document.getElementById('flag-img').classList.add('hidden');
+            document.getElementById('capital-question').classList.remove('hidden');
+            document.getElementById('question-text').innerText = "Hauptstadt von...";
+        } else {
+            document.getElementById('flag-img').classList.remove('hidden');
+            document.getElementById('capital-question').classList.add('hidden');
+            document.getElementById('question-text').innerText = "Welches Land?";
+        }
+        nextQuestion();
+    }
+
+    function backToMenu() {
+        if (currentMode === 'flags' && score > highFlags) {
+            highFlags = score;
+            localStorage.setItem('highFlags', highFlags);
+            alert("Neuer Rekord! 🎉");
+        } else if (currentMode === 'capitals' && score > highCapitals) {
+            highCapitals = score;
+            localStorage.setItem('highCapitals', highCapitals);
+            alert("Neuer Rekord! 🎉");
+        }
+        updateHighscoreDisplay();
+        document.getElementById('menu-overlay').classList.remove('hidden');
+    }
+
+    function nextQuestion() {
+        currentQuestion = countries[Math.floor(Math.random() * countries.length)];
+        if(currentMode === 'flags') {
+            document.getElementById('flag-img').src = "flags/" + currentQuestion.c + ".png";
+        } else {
+            document.getElementById('capital-question').innerText = currentQuestion.n;
+        }
+
+        let correctAnswer = (currentMode === 'flags') ? currentQuestion.n : currentQuestion.cap;
+        let choices = [correctAnswer];
+        while(choices.length < 4) {
+            let rObj = countries[Math.floor(Math.random() * countries.length)];
+            let rAnswer = (currentMode === 'flags') ? rObj.n : rObj.cap;
+            if(!choices.includes(rAnswer)) choices.push(rAnswer);
+        }
+        choices.sort(() => Math.random() - 0.5);
+
+        const btns = document.querySelectorAll('.answer-btn');
+        btns.forEach((b, i) => {
+            b.innerText = choices[i];
+            b.style.visibility = 'visible';
+            b.disabled = false;
+        });
+        document.getElementById('joker-btn').disabled = false;
+    }
+
+    function check(btn) {
+        let correctAnswer = (currentMode === 'flags') ? currentQuestion.n : currentQuestion.cap;
+        if(btn.innerText === correctAnswer) {
+            score++;
+            addCoins(10);
+            alert("Richtig! +10 💰");
+        } else {
+            alert("Falsch! Es war: " + correctAnswer);
+        }
+        document.getElementById('score').innerText = "Punkte: " + score;
+        nextQuestion();
+    }
+
+    function useJoker() {
+        if (coins >= 50) {
+            let correctAnswer = (currentMode === 'flags') ? currentQuestion.n : currentQuestion.cap;
+            let btns = Array.from(document.querySelectorAll('.answer-btn'));
+            let wrongButtons = btns.filter(b => b.innerText !== correctAnswer);
+            wrongButtons.sort(() => Math.random() - 0.5);
+            wrongButtons[0].style.visibility = 'hidden';
+            wrongButtons[1].style.visibility = 'hidden';
+            addCoins(-50);
+            document.getElementById('joker-btn').disabled = true;
+        } else {
+            alert("Du brauchst 50 Münzen!");
+        }
+    }
+
+    function addCoins(amount) {
+        coins += amount;
+        localStorage.setItem('coins', coins);
+        document.getElementById('coin-count').innerText = coins;
+        const topBar = document.getElementById('top-bar');
+        topBar.classList.remove('coin-hop');
+        void topBar.offsetWidth; 
+        topBar.classList.add('coin-hop');
+    }
+
+    function openShop() {
+        if(confirm("500 Münzen für 0,99 € kaufen?")) {
+            addCoins(500);
+        }
+    }
+</script>
+</body>
+</html>
