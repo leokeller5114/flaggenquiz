@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welt Quiz Pro</title>
+
+<style>
+
+/* 🌌 Hintergrund */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background: radial-gradient(circle, #3a3a7a, #1a1a2e);
+    color: white;
+}
+
+/* 📦 Hauptkarte */
+#card {
+    width: 520px;
+    height: 750px;
+    padding: 30px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(20px);
+    border-radius: 30px;
+}
+
+/* 🔘 Buttons */
+button {
+    width: 100%;
+    margin: 8px 0;
+    padding: 20px;
+    font-size: 18px;
+    border-radius: 18px;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    background: rgba(255,255,255,0.2);
+}
+
+/* 🎮 Grid */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+#answers button {
+    padding: 18px;
+    font-size: 16px;
+}
+
+/* ✔️ ❌ */
+.correct { background: green; }
+.wrong { background: red; }
+
+/* 📚 Lernbereich */
+.scroll {
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+/* Tabelle modern */
+#table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+#table tr {
+    background: rgba(255,255,255,0.06);
+    border-radius: 12px;
+    transition: 0.2s;
+}
+
+#table tr:hover {
+    background: rgba(255,255,255,0.12);
+    transform: scale(1.01);
+}
+
+#table td {
+    padding: 14px;
+    font-size: 15px;
+}
+
+#table img {
+    width: 50px;
+    height: 32px;
+    border-radius: 6px;
+}
+
+/* ⭐ Favoriten */
+#table td:first-child {
+    cursor: pointer;
+    font-size: 20px;
+    text-align: center;
+}
+
+/* 🔍 Suche */
+input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 16px;
+    border: none;
+    margin-bottom: 10px;
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.hidden { display:none; }
+
+</style>
+</head>
+
+<body>
+
+<div id="card">
+
+<div id="menu">
+<h2>🌍 Welt Quiz</h2>
+<p id="coins">💰 0</p>
+<button onclick="openSelect()">🎮 Start</button>
+<button onclick="openLearn()">📚 Lernen</button>
+</div>
+
+<div id="select" class="hidden">
+<h2>🌍 Kontinent wählen</h2>
+
+<button onclick="startQuizRegion('Alle')">🌍 Welt</button>
+<button onclick="startQuizRegion('Europa')">🇪🇺 Europa</button>
+<button onclick="startQuizRegion('Asien')">🌏 Asien</button>
+<button onclick="startQuizRegion('Afrika')">🌍 Afrika</button>
+<button onclick="startQuizRegion('Nordamerika')">🌎 Nordamerika</button>
+<button onclick="startQuizRegion('Südamerika')">🌎 Südamerika</button>
+<button onclick="startQuizRegion('Ozeanien')">🌏 Ozeanien</button>
+
+<button onclick="home()">⬅️ Zurück</button>
+</div>
+
+
+<div id="game" class="hidden">
+<p id="lvl"></p>
+<p id="score"></p>
+
+<img id="img" style="max-height:140px">
+
+<div class="grid" id="answers">
+<button onclick="check(this)"></button>
+<button onclick="check(this)"></button>
+<button onclick="check(this)"></button>
+<button onclick="check(this)"></button>
+</div>
+
+<button onclick="joker()">🃏 Joker (50 💰)</button>
+<button onclick="goMenu()">⬅️ Menü</button>
+</div>
+
+<div id="learn" class="hidden scroll">
+<input placeholder="🔍 suchen..." oninput="search(this.value)">
+<table id="table"></table>
+<button onclick="home()">⬅️ Menü</button>
+</div>
+
+</div>
+
+<script>
+
+// 🌍 Länder (Beispiel – hier kannst du deine komplette Liste einsetzen)
+const countries = [
+
+/* 🌍 EUROPA */
+{n:"Deutschland",c:"de",cap:"Berlin",pop:83000000,r:"Europa"},
+{n:"Frankreich",c:"fr",cap:"Paris",pop:67000000,r:"Europa"},
+{n:"Italien",c:"it",cap:"Rom",pop:60000000,r:"Europa"},
+{n:"Spanien",c:"es",cap:"Madrid",pop:47000000,r:"Europa"},
+{n:"Portugal",c:"pt",cap:"Lissabon",pop:10000000,r:"Europa"},
+{n:"Niederlande",c:"nl",cap:"Amsterdam",pop:17000000,r:"Europa"},
+{n:"Belgien",c:"be",cap:"Brüssel",pop:11500000,r:"Europa"},
+{n:"Schweiz",c:"ch",cap:"Bern",pop:8600000,r:"Europa"},
+{n:"Österreich",c:"at",cap:"Wien",pop:9000000,r:"Europa"},
+{n:"Polen",c:"pl",cap:"Warschau",pop:38000000,r:"Europa"},
+{n:"Tschechien",c:"cz",cap:"Prag",pop:10700000,r:"Europa"},
+{n:"Ungarn",c:"hu",cap:"Budapest",pop:9700000,r:"Europa"},
+{n:"Rumänien",c:"ro",cap:"Bukarest",pop:19000000,r:"Europa"},
+{n:"Bulgarien",c:"bg",cap:"Sofia",pop:7000000,r:"Europa"},
+{n:"Griechenland",c:"gr",cap:"Athen",pop:10700000,r:"Europa"},
+{n:"Schweden",c:"se",cap:"Stockholm",pop:10000000,r:"Europa"},
+{n:"Norwegen",c:"no",cap:"Oslo",pop:5400000,r:"Europa"},
+{n:"Finnland",c:"fi",cap:"Helsinki",pop:5500000,r:"Europa"},
+{n:"Dänemark",c:"dk",cap:"Kopenhagen",pop:5800000,r:"Europa"},
+{n:"Irland",c:"ie",cap:"Dublin",pop:5000000,r:"Europa"},
+{n:"Island",c:"is",cap:"Reykjavík",pop:370000,r:"Europa"},
+
+/* 🌎 NORDAMERIKA */
+{n:"USA",c:"us",cap:"Washington D.C.",pop:330000000,r:"Nordamerika"},
+{n:"Kanada",c:"ca",cap:"Ottawa",pop:38000000,r:"Nordamerika"},
+{n:"Mexiko",c:"mx",cap:"Mexiko-Stadt",pop:130000000,r:"Nordamerika"},
+{n:"Kuba",c:"cu",cap:"Havanna",pop:11000000,r:"Nordamerika"},
+{n:"Jamaika",c:"jm",cap:"Kingston",pop:2900000,r:"Nordamerika"},
+{n:"Costa Rica",c:"cr",cap:"San José",pop:5000000,r:"Nordamerika"},
+{n:"Panama",c:"pa",cap:"Panama-Stadt",pop:4300000,r:"Nordamerika"},
+
+/* 🌎 SÜDAMERIKA */
+{n:"Brasilien",c:"br",cap:"Brasília",pop:210000000,r:"Südamerika"},
+{n:"Argentinien",c:"ar",cap:"Buenos Aires",pop:45000000,r:"Südamerika"},
+{n:"Chile",c:"cl",cap:"Santiago",pop:19000000,r:"Südamerika"},
+{n:"Peru",c:"pe",cap:"Lima",pop:33000000,r:"Südamerika"},
+{n:"Kolumbien",c:"co",cap:"Bogotá",pop:50000000,r:"Südamerika"},
+{n:"Venezuela",c:"ve",cap:"Caracas",pop:28000000,r:"Südamerika"},
+{n:"Uruguay",c:"uy",cap:"Montevideo",pop:3500000,r:"Südamerika"},
+{n:"Paraguay",c:"py",cap:"Asunción",pop:7000000,r:"Südamerika"},
+
+/* 🌏 ASIEN */
+{n:"China",c:"cn",cap:"Peking",pop:1400000000,r:"Asien"},
+{n:"Indien",c:"in",cap:"Neu-Delhi",pop:1400000000,r:"Asien"},
+{n:"Japan",c:"jp",cap:"Tokio",pop:125000000,r:"Asien"},
+{n:"Südkorea",c:"kr",cap:"Seoul",pop:51000000,r:"Asien"},
+{n:"Nordkorea",c:"kp",cap:"Pjöngjang",pop:25000000,r:"Asien"},
+{n:"Thailand",c:"th",cap:"Bangkok",pop:70000000,r:"Asien"},
+{n:"Vietnam",c:"vn",cap:"Hanoi",pop:97000000,r:"Asien"},
+{n:"Indonesien",c:"id",cap:"Jakarta",pop:270000000,r:"Asien"},
+{n:"Malaysia",c:"my",cap:"Kuala Lumpur",pop:32000000,r:"Asien"},
+{n:"Philippinen",c:"ph",cap:"Manila",pop:110000000,r:"Asien"},
+{n:"Saudi-Arabien",c:"sa",cap:"Riad",pop:34000000,r:"Asien"},
+{n:"Iran",c:"ir",cap:"Teheran",pop:83000000,r:"Asien"},
+{n:"Irak",c:"iq",cap:"Bagdad",pop:40000000,r:"Asien"},
+{n:"Israel",c:"il",cap:"Jerusalem",pop:9000000,r:"Asien"},
+{n:"Türkei",c:"tr",cap:"Ankara",pop:85000000,r:"Asien"},
+
+/* 🌍 AFRIKA */
+{n:"Ägypten",c:"eg",cap:"Kairo",pop:100000000,r:"Afrika"},
+{n:"Nigeria",c:"ng",cap:"Abuja",pop:200000000,r:"Afrika"},
+{n:"Südafrika",c:"za",cap:"Pretoria",pop:60000000,r:"Afrika"},
+{n:"Kenia",c:"ke",cap:"Nairobi",pop:53000000,r:"Afrika"},
+{n:"Marokko",c:"ma",cap:"Rabat",pop:36000000,r:"Afrika"},
+{n:"Algerien",c:"dz",cap:"Algier",pop:43000000,r:"Afrika"},
+{n:"Ghana",c:"gh",cap:"Accra",pop:31000000,r:"Afrika"},
+{n:"Tansania",c:"tz",cap:"Dodoma",pop:60000000,r:"Afrika"},
+{n:"Uganda",c:"ug",cap:"Kampala",pop:45000000,r:"Afrika"},
+{n:"Äthiopien",c:"et",cap:"Addis Abeba",pop:110000000,r:"Afrika"},
+
+/* 🌏 OZEANIEN */
+{n:"Australien",c:"au",cap:"Canberra",pop:26000000,r:"Ozeanien"},
+{n:"Neuseeland",c:"nz",cap:"Wellington",pop:5000000,r:"Ozeanien"},
+{n:"Fidschi",c:"fj",cap:"Suva",pop:900000,r:"Ozeanien"},
+{n:"Papua-Neuguinea",c:"pg",cap:"Port Moresby",pop:9000000,r:"Ozeanien"}
+
+];// 🚩 Flaggen
+function setFlag(img, code){
+    img.src = "flags/" + code + ".png";
+    img.onerror = () => {
+        img.src = "https://flagcdn.com/w160/" + code + ".png";
+    };
+}
+
+// STATE
+let s = {
+score:0,
+xp:0,
+level:1,
+coins: parseInt(localStorage.getItem("coins")) || 0,
+favs: JSON.parse(localStorage.getItem("favs")) || []
+};
+
+let last=[];
+
+// UPDATE
+function up(){
+document.getElementById("coins").innerText="💰 "+s.coins;
+}
+
+// MENU
+function home(){ location.reload(); }
+
+function goMenu(){
+document.getElementById("game").classList.add("hidden");
+document.getElementById("menu").classList.remove("hidden");
+}
+
+// QUIZ
+function startQuiz(){
+document.getElementById("menu").classList.add("hidden");
+document.getElementById("game").classList.remove("hidden");
+next();
+}
+
+// LEVEL
+function getDiff(){
+if(s.level<5) return c=>c.pop>50000000;
+if(s.level<10) return c=>c.pop>5000000;
+return c=>true;
+}
+
+function next(){
+
+let list = countries.filter(getDiff());
+
+// 🌍 nach Region filtern
+if(s.region && s.region !== "Alle"){
+    list = list.filter(c => c.r === s.region);
+}
+
+let filtered=list.filter(c=>!last.includes(c.n));
+if(filtered.length<5) filtered=list;
+
+let c=filtered[Math.floor(Math.random()*filtered.length)];
+
+last.push(c.n);
+if(last.length>10) last.shift();
+
+s.curr=c;
+
+setFlag(document.getElementById("img"),c.c);
+
+let correct=c.n;
+
+let opts=[correct];
+while(opts.length<4){
+let r=list[Math.floor(Math.random()*list.length)];
+if(!opts.includes(r.n)) opts.push(r.n);
+}
+
+opts.sort(()=>Math.random()-0.5);
+
+document.querySelectorAll("#answers button").forEach((b,i)=>{
+b.innerText=opts[i];
+b.className="";
+b.style.visibility="visible";
+});
+
+document.getElementById("lvl").innerText="Level "+s.level;
+document.getElementById("score").innerText="Punkte "+s.score;
+}
+
+// CHECK
+function check(b){
+
+if(b.innerText===s.curr.n){
+b.classList.add("correct");
+s.score++;
+s.xp+=20;
+s.coins+=5;
+}else{
+b.classList.add("wrong");
+}
+
+localStorage.setItem("coins",s.coins);
+up();
+
+if(s.xp>=s.level*100){
+s.xp=0;
+s.level++;
+alert("Level Up!");
+}
+
+setTimeout(next,800);
+}
+
+// JOKER
+function joker(){
+
+if(s.coins<50){
+alert("Nicht genug Münzen!");
+return;
+}
+
+s.coins-=50;
+localStorage.setItem("coins",s.coins);
+up();
+
+let correct=s.curr.n;
+
+let wrong=[...document.querySelectorAll("#answers button")]
+.filter(b=>b.innerText!==correct);
+
+wrong[0].style.visibility="hidden";
+wrong[1].style.visibility="hidden";
+}
+
+// LEARN
+function openLearn(){
+document.getElementById("menu").classList.add("hidden");
+document.getElementById("learn").classList.remove("hidden");
+buildTable();
+}
+
+function buildTable(){
+
+let html="<tr><th>⭐</th><th>Flagge</th><th>Land</th><th>Hauptstadt</th></tr>";
+
+countries.forEach(c=>{
+let fav=s.favs.includes(c.n)?"⭐":"☆";
+
+html+=`
+<tr>
+<td onclick="toggleFav('${c.n}')">${fav}</td>
+<td><img id="f-${c.c}"></td>
+<td>${c.n}</td>
+<td>${c.cap}</td>
+</tr>`;
+});
+
+document.getElementById("table").innerHTML=html;
+
+countries.forEach(c=>{
+setFlag(document.getElementById("f-"+c.c),c.c);
+});
+}
+
+// FAVORITEN
+function toggleFav(name){
+
+if(s.favs.includes(name)){
+s.favs=s.favs.filter(x=>x!==name);
+}else{
+s.favs.push(name);
+}
+
+localStorage.setItem("favs",JSON.stringify(s.favs));
+buildTable();
+}
+
+// SEARCH
+function search(q){
+q=q.toLowerCase();
+document.querySelectorAll("#table tr").forEach((r,i)=>{
+if(i===0) return;
+r.style.display=r.innerText.toLowerCase().includes(q)?"":"none";
+});
+}
+
+up();
+// 🌍 Auswahl öffnen
+function openSelect(){
+    document.getElementById("menu").classList.add("hidden");
+    document.getElementById("select").classList.remove("hidden");
+}
+
+// 🎮 Spiel starten mit Region
+function startQuizRegion(region){
+
+    s.region = region;
+
+    document.getElementById("select").classList.add("hidden");
+    document.getElementById("game").classList.remove("hidden");
+
+    next();
+}
+</script>
+
+</body>
+</html>
