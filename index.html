@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welt Quiz Pro</title>
+
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+
+    display:flex;
+    justify-content:center;
+    align-items:flex-start; /* 🔥 WICHTIG: nicht mehr zentriert */
+
+    min-height:100vh;
+    margin:0;
+    padding-top:40px; /* 🔥 schiebt alles runter */
+
+    color:white;
+
+    background: radial-gradient(circle at 20% 20%, #4a00e0, transparent 40%),
+                radial-gradient(circle at 80% 80%, #8e2de2, transparent 40%),
+                radial-gradient(circle at 50% 50%, #1a1a2e, #000);
+}
+#card {
+    width:520px;
+    max-width:95%;
+    height:90vh;
+    padding:25px;
+    border-radius:30px;
+
+    background: rgba(20,20,40,0.6);
+    backdrop-filter: blur(25px);
+
+    box-shadow:
+        0 0 40px rgba(138,43,226,0.4),
+        0 0 80px rgba(0,255,255,0.1);
+
+    margin-top:20px;
+    margin-bottom:20px;
+
+    overflow:hidden; /* 🔥 wichtig */
+}
+button {
+    width:100%;
+    padding:22px;              /* 🔥 größer */
+    margin:10px 0;
+    border-radius:22px;
+    border:none;
+
+    font-size:19px;            /* 🔥 größere Schrift */
+    font-weight:600;
+
+    color:white;
+    cursor:pointer;
+
+    background: linear-gradient(135deg,#6a11cb,#2575fc);
+
+    box-shadow: 0 6px 25px rgba(0,0,0,0.5);
+
+    transition: all 0.25s ease;
+}
+
+button:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 10px 35px rgba(0,0,0,0.7);
+}
+#answers button {
+    padding:20px;
+    font-size:18px;
+}
+button:hover {transform:translateY(-2px);}
+
+.grid {
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+#menu,
+#select,
+#learnSelect,
+#game,
+#learn {
+    height:100%;
+    overflow-y:auto;   /* 🔥 DAS IST DER FIX */
+    padding-bottom:40px;
+}
+
+.correct {background:#00c853;}
+.wrong {background:#ff5252;}
+
+.hidden {display:none;}
+.scroll {overflow-y:auto;}
+
+#table img {width:45px;height:30px;border-radius:6px;}
+
+#learn {
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* 🌌 Hintergrund Galaxy */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    margin:0;
+    color:white;
+
+    background: radial-gradient(circle at 20% 20%, #4a00e0, transparent 40%),
+                radial-gradient(circle at 80% 80%, #8e2de2, transparent 40%),
+                radial-gradient(circle at 50% 50%, #1a1a2e, #000);
+
+    overflow:hidden;
+}
+
+/* ✨ Sterne Effekt */
+body::before {
+    content:"";
+    position:absolute;
+    width:100%;
+    height:100%;
+    background-image: radial-gradient(white 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity:0.15;
+}
+
+/* 📦 Card */
+#card {
+    width:520px;
+    height:760px;
+    padding:30px;
+    border-radius:30px;
+
+    background: rgba(20,20,40,0.6);
+    backdrop-filter: blur(25px);
+
+    box-shadow:
+        0 0 40px rgba(138,43,226,0.4),
+        0 0 80px rgba(0,255,255,0.1);
+
+    overflow:hidden;
+}
+
+/* 🔘 Buttons */
+button {
+    width:100%;
+    padding:18px;
+    margin:8px 0;
+    border-radius:20px;
+    border:none;
+    font-size:17px;
+    font-weight:600;
+    color:white;
+    cursor:pointer;
+
+    background: linear-gradient(135deg,#6a11cb,#2575fc);
+
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+
+    transition: all 0.25s ease;
+}
+
+button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.6);
+}
+
+/* 🎯 Aktiver Button */
+.active {
+    background: linear-gradient(135deg,#00c6ff,#0072ff);
+    box-shadow: 0 0 20px rgba(0,255,255,0.7);
+}
+
+/* 🎮 Grid */
+.grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+/* ✔️ ❌ Feedback */
+.correct {
+    background: linear-gradient(135deg,#00c853,#00e676);
+    transform: scale(1.05);
+}
+
+.wrong {
+    background: linear-gradient(135deg,#ff1744,#ff5252);
+    animation: shake 0.3s;
+}
+
+@keyframes shake {
+    0% {transform: translateX(0);}
+    25% {transform: translateX(-5px);}
+    50% {transform: translateX(5px);}
+    75% {transform: translateX(-5px);}
+    100% {transform: translateX(0);}
+}
+
+/* 🖼️ Bild */
+#img {
+    max-height:150px;
+    display:block;
+    margin:auto;
+    border-radius:12px;
+
+    box-shadow: 0 0 20px rgba(255,255,255,0.2);
+}
+
+/* 📊 Info */
+#info {
+    text-align:center;
+    font-size:20px;
+    margin-bottom:15px;
+    color:#cfd8ff;
+}
+
+/* 📚 Lernbereich */
+.scroll {
+    overflow-y:auto;
+}
+
+/* Tabelle */
+#table {
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0 8px;
+}
+
+#table tr {
+    background: rgba(255,255,255,0.05);
+    border-radius:12px;
+    transition:0.2s;
+}
+
+#table tr:hover {
+    background: rgba(255,255,255,0.1);
+    transform:scale(1.01);
+}
+
+#table td {
+    padding:12px;
+}
+
+#table img {
+    width:45px;
+    border-radius:6px;
+}
+
+/* 🔍 Suche */
+input {
+    width:100%;
+    padding:14px;
+    border-radius:16px;
+    border:none;
+    margin-bottom:10px;
+
+    background: rgba(255,255,255,0.1);
+    color:white;
+}
+
+/* 🚫 Hidden */
+.hidden {
+    display:none;
+}
+
+
+</style>
+</head>
+
+<body>
+<div id="card">
+
+<!-- MENU -->
+<div id="menu">
+<h2>🌍 Welt Quiz Pro</h2>
+<p id="coins">💰 0</p>
+
+<button onclick="openSelect()">🎮 Quiz starten</button>
+<button onclick="openLearnSelect()">📚 Lernen</button>
+<button onclick="startDaily()">📅 Daily Challenge</button>
+</div>
+
+<div id="select" class="hidden">
+
+<h2>🎮 Modus wählen</h2>
+
+<!-- 👇 HIER DIE BUTTONS -->
+<button onclick="startMode('flags')">🚩 Flaggen Quiz</button>
+<button onclick="startMode('capitals')">🏙️ Hauptstadt Quiz</button>
+
+<h2>🌍 Kontinent wählen</h2>
+
+<button onclick="startQuizRegion('Alle')">🌍 Welt</button>
+<button onclick="startQuizRegion('Europa')">Europa</button>
+<button onclick="startQuizRegion('Asien')">Asien</button>
+<button onclick="startQuizRegion('Afrika')">Afrika</button>
+<button onclick="startQuizRegion('Nordamerika')">Nordamerika</button>
+<button onclick="startQuizRegion('Südamerika')">Südamerika</button>
+<button onclick="startQuizRegion('Ozeanien')">Ozeanien</button>
+
+<button onclick="backMenu()">⬅️ Zurück</button>
+
+</div>
+<!-- LEARN SELECT -->
+<div id="learnSelect" class="hidden">
+
+<h2>📚 Lernen wählen</h2>
+
+<button onclick="startLearn('Alle')">🌍 Welt</button>
+<button onclick="startLearn('Europa')">🇪🇺 Europa</button>
+<button onclick="startLearn('Asien')">🌏 Asien</button>
+<button onclick="startLearn('Afrika')">🌍 Afrika</button>
+<button onclick="startLearn('Nordamerika')">🌎 Nordamerika</button>
+<button onclick="startLearn('Südamerika')">🌎 Südamerika</button>
+<button onclick="startLearn('Ozeanien')">🌏 Ozeanien</button>
+
+<button onclick="backMenu()">⬅️ Zurück</button>
+
+</div>
+
+<!-- GAME -->
+<div id="game" class="hidden">
+<p id="info"></p>
+<img id="img" style="max-height:140px">
+
+<div id="answers" class="grid">
+<button onclick="check(this)"></button>
+<button onclick="check(this)"></button>
+<button onclick="check(this)"></button>
+<button onclick="check(this)"></button>
+</div>
+
+<button onclick="joker()">🃏 Joker (50)</button>
+<button onclick="backMenu()">⬅️ Menü</button>
+</div>
+
+<!-- LEARN -->
+<div id="learn" class="hidden scroll">
+<input placeholder="🔍 suchen..." oninput="search(this.value)">
+<table id="table"></table>
+<button onclick="backMenu()">⬅️ Menü</button>
+</div>
+
+</div>
+
+<script>
+
+// 🌍 LÄNDER (hier kannst du deine komplette Liste einsetzen!)
+const countries = [
+
+/* 🌍 EUROPA */
+{n:"Deutschland",c:"de",cap:"Berlin",pop:83000000,r:"Europa"},
+{n:"Frankreich",c:"fr",cap:"Paris",pop:67000000,r:"Europa"},
+{n:"Italien",c:"it",cap:"Rom",pop:60000000,r:"Europa"},
+{n:"Spanien",c:"es",cap:"Madrid",pop:47000000,r:"Europa"},
+{n:"Portugal",c:"pt",cap:"Lissabon",pop:10000000,r:"Europa"},
+{n:"Niederlande",c:"nl",cap:"Amsterdam",pop:17000000,r:"Europa"},
+{n:"Belgien",c:"be",cap:"Brüssel",pop:11500000,r:"Europa"},
+{n:"Schweiz",c:"ch",cap:"Bern",pop:8600000,r:"Europa"},
+{n:"Österreich",c:"at",cap:"Wien",pop:9000000,r:"Europa"},
+{n:"Polen",c:"pl",cap:"Warschau",pop:38000000,r:"Europa"},
+{n:"Tschechien",c:"cz",cap:"Prag",pop:10700000,r:"Europa"},
+{n:"Ungarn",c:"hu",cap:"Budapest",pop:9700000,r:"Europa"},
+{n:"Rumänien",c:"ro",cap:"Bukarest",pop:19000000,r:"Europa"},
+{n:"Bulgarien",c:"bg",cap:"Sofia",pop:7000000,r:"Europa"},
+{n:"Griechenland",c:"gr",cap:"Athen",pop:10700000,r:"Europa"},
+{n:"Schweden",c:"se",cap:"Stockholm",pop:10000000,r:"Europa"},
+{n:"Norwegen",c:"no",cap:"Oslo",pop:5400000,r:"Europa"},
+{n:"Finnland",c:"fi",cap:"Helsinki",pop:5500000,r:"Europa"},
+{n:"Dänemark",c:"dk",cap:"Kopenhagen",pop:5800000,r:"Europa"},
+{n:"Irland",c:"ie",cap:"Dublin",pop:5000000,r:"Europa"},
+{n:"Island",c:"is",cap:"Reykjavík",pop:370000,r:"Europa"},
+
+/* 🌎 NORDAMERIKA */
+{n:"USA",c:"us",cap:"Washington D.C.",pop:330000000,r:"Nordamerika"},
+{n:"Kanada",c:"ca",cap:"Ottawa",pop:38000000,r:"Nordamerika"},
+{n:"Mexiko",c:"mx",cap:"Mexiko-Stadt",pop:130000000,r:"Nordamerika"},
+{n:"Kuba",c:"cu",cap:"Havanna",pop:11000000,r:"Nordamerika"},
+{n:"Jamaika",c:"jm",cap:"Kingston",pop:2900000,r:"Nordamerika"},
+{n:"Costa Rica",c:"cr",cap:"San José",pop:5000000,r:"Nordamerika"},
+{n:"Panama",c:"pa",cap:"Panama-Stadt",pop:4300000,r:"Nordamerika"},
+
+/* 🌎 SÜDAMERIKA */
+{n:"Brasilien",c:"br",cap:"Brasília",pop:210000000,r:"Südamerika"},
+{n:"Argentinien",c:"ar",cap:"Buenos Aires",pop:45000000,r:"Südamerika"},
+{n:"Chile",c:"cl",cap:"Santiago",pop:19000000,r:"Südamerika"},
+{n:"Peru",c:"pe",cap:"Lima",pop:33000000,r:"Südamerika"},
+{n:"Kolumbien",c:"co",cap:"Bogotá",pop:50000000,r:"Südamerika"},
+{n:"Venezuela",c:"ve",cap:"Caracas",pop:28000000,r:"Südamerika"},
+{n:"Uruguay",c:"uy",cap:"Montevideo",pop:3500000,r:"Südamerika"},
+{n:"Paraguay",c:"py",cap:"Asunción",pop:7000000,r:"Südamerika"},
+
+/* 🌏 ASIEN */
+{n:"China",c:"cn",cap:"Peking",pop:1400000000,r:"Asien"},
+{n:"Indien",c:"in",cap:"Neu-Delhi",pop:1400000000,r:"Asien"},
+{n:"Japan",c:"jp",cap:"Tokio",pop:125000000,r:"Asien"},
+{n:"Südkorea",c:"kr",cap:"Seoul",pop:51000000,r:"Asien"},
+{n:"Nordkorea",c:"kp",cap:"Pjöngjang",pop:25000000,r:"Asien"},
+{n:"Thailand",c:"th",cap:"Bangkok",pop:70000000,r:"Asien"},
+{n:"Vietnam",c:"vn",cap:"Hanoi",pop:97000000,r:"Asien"},
+{n:"Indonesien",c:"id",cap:"Jakarta",pop:270000000,r:"Asien"},
+{n:"Malaysia",c:"my",cap:"Kuala Lumpur",pop:32000000,r:"Asien"},
+{n:"Philippinen",c:"ph",cap:"Manila",pop:110000000,r:"Asien"},
+{n:"Saudi-Arabien",c:"sa",cap:"Riad",pop:34000000,r:"Asien"},
+{n:"Iran",c:"ir",cap:"Teheran",pop:83000000,r:"Asien"},
+{n:"Irak",c:"iq",cap:"Bagdad",pop:40000000,r:"Asien"},
+{n:"Israel",c:"il",cap:"Jerusalem",pop:9000000,r:"Asien"},
+{n:"Türkei",c:"tr",cap:"Ankara",pop:85000000,r:"Asien"},
+
+/* 🌍 AFRIKA */
+{n:"Ägypten",c:"eg",cap:"Kairo",pop:100000000,r:"Afrika"},
+{n:"Nigeria",c:"ng",cap:"Abuja",pop:200000000,r:"Afrika"},
+{n:"Südafrika",c:"za",cap:"Pretoria",pop:60000000,r:"Afrika"},
+{n:"Kenia",c:"ke",cap:"Nairobi",pop:53000000,r:"Afrika"},
+{n:"Marokko",c:"ma",cap:"Rabat",pop:36000000,r:"Afrika"},
+{n:"Algerien",c:"dz",cap:"Algier",pop:43000000,r:"Afrika"},
+{n:"Ghana",c:"gh",cap:"Accra",pop:31000000,r:"Afrika"},
+{n:"Tansania",c:"tz",cap:"Dodoma",pop:60000000,r:"Afrika"},
+{n:"Uganda",c:"ug",cap:"Kampala",pop:45000000,r:"Afrika"},
+{n:"Äthiopien",c:"et",cap:"Addis Abeba",pop:110000000,r:"Afrika"},
+
+/* 🌏 OZEANIEN */
+{n:"Australien",c:"au",cap:"Canberra",pop:26000000,r:"Ozeanien"},
+{n:"Neuseeland",c:"nz",cap:"Wellington",pop:5000000,r:"Ozeanien"},
+{n:"Fidschi",c:"fj",cap:"Suva",pop:900000,r:"Ozeanien"},
+{n:"Papua-Neuguinea",c:"pg",cap:"Port Moresby",pop:9000000,r:"Ozeanien"}
+
+];
+// STATE
+let s={
+coins:parseInt(localStorage.getItem("coins"))||0,
+mode:"flags",
+region:"Alle",
+dailyDone:localStorage.getItem("daily")==new Date().toDateString(),
+dailyCount:0,
+dailyWrong:false
+};
+
+function up(){document.getElementById("coins").innerText="💰 "+s.coins;}
+
+function setFlag(img,code){
+img.src="flags/"+code+".png";
+img.onerror=()=>img.src="https://flagcdn.com/w160/"+code+".png";
+}
+
+// MENU
+function backMenu(){
+document.querySelectorAll("#menu,#select,#learnSelect,#game,#learn")
+.forEach(e=>e.classList.add("hidden"));
+document.getElementById("menu").classList.remove("hidden");
+}
+
+function openSelect(){
+document.getElementById("menu").classList.add("hidden");
+document.getElementById("select").classList.remove("hidden");
+}
+
+function openLearnSelect(){
+document.getElementById("menu").classList.add("hidden");
+document.getElementById("learnSelect").classList.remove("hidden");
+}
+
+function setMode(m){s.mode=m;}
+
+// QUIZ
+function startQuizRegion(r){
+s.region=r;
+document.getElementById("select").classList.add("hidden");
+document.getElementById("game").classList.remove("hidden");
+next();
+}
+
+function next(){
+
+    // 🌍 Länderliste nach Region filtern
+    let list = s.region == "Alle"
+        ? countries
+        : countries.filter(c => c.r == s.region);
+
+    // zufälliges Land
+    let c = list[Math.floor(Math.random() * list.length)];
+    s.curr = c;
+
+    // 🎮 Anzeige je nach Modus
+    if(s.mode == "flags"){
+        img.style.display = "block";
+        setFlag(img, c.c);
+        document.getElementById("info").innerText = "🚩 Welches Land ist das?";
+    } else {
+        img.style.display = "none";
+        document.getElementById("info").innerText = "🏙️ Hauptstadt: " + c.cap;
+    }
+
+    // ✅ richtige Antwort (immer LAND!)
+    let correct = c.n;
+
+    // 🧠 Antwortmöglichkeiten
+    let opts = [correct];
+
+    while(opts.length < 4){
+        let r = list[Math.floor(Math.random() * list.length)];
+        if(!opts.includes(r.n)){
+            opts.push(r.n);
+        }
+    }
+
+    // 🔀 mischen
+    opts.sort(() => Math.random() - 0.5);
+
+    // 🎯 Buttons setzen
+    document.querySelectorAll("#answers button").forEach((b, i) => {
+        b.innerText = opts[i];
+        b.className = "";
+        b.style.visibility = "visible";
+    });
+
+    // 💰 Anzeige
+    document.getElementById("info").innerText += "   |   💰 " + s.coins;
+}
+// CHECK
+function check(b){
+
+    let correct = s.curr.n;
+
+    if(b.innerText === correct){
+        b.classList.add("correct");
+        s.score++;
+        s.coins += 5;
+    } else {
+        b.classList.add("wrong");
+        alert("Falsch! Richtig war: " + correct);
+    }
+
+    localStorage.setItem("coins", s.coins);
+    up();
+
+    setTimeout(next, 800);
+
+} // 👈 HIER ENDET DIE FUNKTION
+
+function startDaily(){
+
+    if(s.dailyDone){
+        alert("Heute schon gespielt!");
+        return;
+    }
+
+    s.dailyMode = true;
+    s.dailyCount = 0;
+    s.dailyWrong = false;
+
+    // 👉 Standard: Flaggen + Welt
+    s.mode = "flags";
+    s.region = "Alle";
+
+    document.getElementById("menu").classList.add("hidden");
+    document.getElementById("game").classList.remove("hidden");
+
+    next();
+}
+function endDaily(){
+s.dailyMode=false;
+if(!s.dailyWrong){
+s.coins+=50;
+alert("Perfekt! +50 Coins");
+}
+localStorage.setItem("coins",s.coins);
+localStorage.setItem("daily",new Date().toDateString());
+backMenu();
+}
+
+// JOKER
+function joker(){
+if(s.coins<50)return alert("Nicht genug Coins");
+s.coins-=50;
+up();
+
+let correct=s.mode=="flags"?s.curr.n:s.curr.cap;
+let wrong=[...document.querySelectorAll("#answers button")]
+.filter(b=>b.innerText!=correct);
+
+wrong[0].style.visibility="hidden";
+wrong[1].style.visibility="hidden";
+}
+
+// LEARN
+function startLearn(r){
+document.getElementById("learnSelect").classList.add("hidden");
+document.getElementById("learn").classList.remove("hidden");
+
+let list=r=="Alle"?countries:countries.filter(c=>c.r==r);
+
+let html="<tr><th>Flagge</th><th>Land</th><th>Hauptstadt</th></tr>";
+
+list.forEach(c=>{
+html+=`<tr>
+<td><img id="f-${c.c}"></td>
+<td>${c.n}</td>
+<td>${c.cap}</td>
+</tr>`;
+});
+
+table.innerHTML=html;
+
+list.forEach(c=>setFlag(document.getElementById("f-"+c.c),c.c));
+}
+
+// SEARCH
+function search(q){
+q=q.toLowerCase();
+document.querySelectorAll("#table tr").forEach((r,i)=>{
+if(i==0)return;
+r.style.display=r.innerText.toLowerCase().includes(q)?"":"none";
+});
+}
+
+up();
+
+function startMode(mode){
+    s.mode = mode;
+
+    // 👉 direkt starten (beste Lösung)
+    startQuizRegion("Alle");
+}
+
+</script>
+</body>
+</html>
