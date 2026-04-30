@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welt Quiz Pro</title>
+
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+
+    display:flex;
+    justify-content:center;
+    align-items:flex-start; /* 🔥 WICHTIG: nicht mehr zentriert */
+
+    min-height:100vh;
+    margin:0;
+    padding-top:40px; /* 🔥 schiebt alles runter */
+
+    color:white;
+
+    background: radial-gradient(circle at 20% 20%, #4a00e0, transparent 40%),
+                radial-gradient(circle at 80% 80%, #8e2de2, transparent 40%),
+                radial-gradient(circle at 50% 50%, #1a1a2e, #000);
+}
+#card {
+    width:520px;
+    max-width:95%;
+    height:90vh;
+    padding:25px;
+    border-radius:30px;
+
+    background: rgba(20,20,40,0.6);
+    backdrop-filter: blur(25px);
+
+    box-shadow:
+        0 0 40px rgba(138,43,226,0.4),
+        0 0 80px rgba(0,255,255,0.1);
+
+    margin-top:20px;
+    margin-bottom:20px;
+
+    overflow:hidden; /* 🔥 wichtig */
+}
+button {
+    width:100%;
+    padding:22px;              /* 🔥 größer */
+    margin:10px 0;
+    border-radius:22px;
+    border:none;
+
+    font-size:19px;            /* 🔥 größere Schrift */
+    font-weight:600;
+
+    color:white;
+    cursor:pointer;
+
+    background: linear-gradient(135deg,#6a11cb,#2575fc);
+
+    box-shadow: 0 6px 25px rgba(0,0,0,0.5);
+
+    transition: all 0.25s ease;
+}
+
+button:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 10px 35px rgba(0,0,0,0.7);
+}
+#answers button {
+    padding:20px;
+    font-size:18px;
+}
+button:hover {transform:translateY(-2px);}
+
+.grid {
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+#menu,
+#select,
+#learnSelect,
+#game,
+#learn {
+    height:100%;
+    overflow-y:auto;   /* 🔥 DAS IST DER FIX */
+    padding-bottom:40px;
+}
+
+.correct {background:#00c853;}
+.wrong {background:#ff5252;}
+
+.hidden {display:none;}
+.scroll {overflow-y:auto;}
+
+#table img {width:45px;height:30px;border-radius:6px;}
+
+#learn {
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* 🌌 Hintergrund Galaxy */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    margin:0;
+    color:white;
+
+    background: radial-gradient(circle at 20% 20%, #4a00e0, transparent 40%),
+                radial-gradient(circle at 80% 80%, #8e2de2, transparent 40%),
+                radial-gradient(circle at 50% 50%, #1a1a2e, #000);
+
+    overflow:hidden;
+}
+
+/* ✨ Sterne Effekt */
+body::before {
+    content:"";
+    position:absolute;
+    width:100%;
+    height:100%;
+    background-image: radial-gradient(white 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity:0.15;
+}
+
+/* 📦 Card */
+#card {
+    width:520px;
+    height:760px;
+    padding:30px;
+    border-radius:30px;
+
+    background: rgba(20,20,40,0.6);
+    backdrop-filter: blur(25px);
+
+    box-shadow:
+        0 0 40px rgba(138,43,226,0.4),
+        0 0 80px rgba(0,255,255,0.1);
+
+    overflow:hidden;
+}
+
+/* 🔘 Buttons */
+button {
+    width:100%;
+    padding:18px;
+    margin:8px 0;
+    border-radius:20px;
+    border:none;
+    font-size:17px;
+    font-weight:600;
+    color:white;
+    cursor:pointer;
+
+    background: linear-gradient(135deg,#6a11cb,#2575fc);
+
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+
+    transition: all 0.25s ease;
+}
+
+button:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.6);
+}
+
+/* 🎯 Aktiver Button */
+.active {
+    background: linear-gradient(135deg,#00c6ff,#0072ff);
+    box-shadow: 0 0 20px rgba(0,255,255,0.7);
+}
+
+/* 🎮 Grid */
+.grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+/* ✔️ ❌ Feedback */
+.correct {
+    background: linear-gradient(135deg,#00c853,#00e676);
+    transform: scale(1.05);
+}
+
+.wrong {
+    background: linear-gradient(135deg,#ff1744,#ff5252);
+    animation: shake 0.3s;
+}
+
+@keyframes shake {
+    0% {transform: translateX(0);}
+    25% {transform: translateX(-5px);}
+    50% {transform: translateX(5px);}
+    75% {transform: translateX(-5px);}
+    100% {transform: translateX(0);}
+}
+
+/* 🖼️ Bild */
+#img {
+    max-height:150px;
+    display:block;
+    margin:auto;
+    border-radius:12px;
+
+    box-shadow: 0 0 20px rgba(255,255,255,0.2);
+}
+
+/* 📊 Info */
+#info {
+    text-align:center;
+    font-size:20px;
+    margin-bottom:15px;
+    color:#cfd8ff;
+}
+
+/* 📚 Lernbereich */
+.scroll {
+    overflow-y:auto;
+}
+
+/* Tabelle */
+#table {
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0 8px;
+}
+
+#table tr {
+    background: rgba(255,255,255,0.05);
+    border-radius:12px;
+    transition:0.2s;
+}
+
+#table tr:hover {
+    background: rgba(255,255,255,0.1);
+    transform:scale(1.01);
+}
+
+#table td {
+    padding:12px;
+}
+
+#table img {
+    width:45px;
+    border-radius:6px;
+}
+
+/* 🔍 Suche */
+input {
+    width:100%;
+    padding:14px;
+    border-radius:16px;
+    border:none;
+    margin-bottom:10px;
+
+    background: rgba(255,255,255,0.1);
+    color:white;
+}
+
+/* 🚫 Hidden */
+.hidden {
+    display:none;
+}
+
+
+</style>
+</head>
+
+<body>
+<div id="card">
+
+<!-- MENU -->
+<div id="menu">
+<h2>🌍 Welt Quiz Pro</h2>
+<p id="coins">💰 0</p>
+
+<button onclick="openSelect()">🎮 Quiz starten</button>
+<button onclick="openLearnSelect()">📚 Lernen</button>
+<button onclick="startDaily()">📅 Daily Challenge</button>
+</div>
+
+<div id="select" class="hidden">
+
+<h2>🎮 Modus wählen</h2>
+
+<!-- 👇 HIER DIE BUTTONS -->
+<button onclick="startMode('flags')">🚩 Flaggen Quiz</button>
+<button onclick="startMode('capitals')">🏙️ Hauptstadt Quiz</button>
+
+<h2>🌍 Kontinent wählen</h2>
+
+<button onclick="startQuizRegion('Alle')">🌍 Welt</button>
+<button onclick="startQuizRegion('Europa')">Europa</button>
+<button onclick="startQuizRegion('Asien')">Asien</button>
+<button onclick="startQuizRegion('Afrika')">Afrika</button>
+<button onclick="startQuizRegion('Nordamerika')">Nordamerika</button>
+<button onclick="startQuizRegion('Südamerika')">Südamerika</button>
+<button onclick="startQuizRegion('Ozeanien')">Ozeanien</button>
+
+<button onclick="backMenu()">⬅️ Zurück</button>
+
+</div>
+<!-- LEARN SELECT -->
+<div id="learnSelect" class="hidden">
+
+<h2>📚 Lernen wählen</h2>
+
+<button onclick="startLearn('Alle')">🌍 Welt</button>
+<button onclick="startLearn('Europa')">🇪🇺 Europa</button>
+<button onclick="startLearn('Asien')">🌏 Asien</button>
+<button onclick="startLearn('Afrika')">🌍 Afrika</button>
+<button onclick="startLearn('Nordamerika')">🌎 Nordamerika</button>
+<button onclick="startLearn('Südamerika')">🌎 Südamerika</button>
+<button onclick="startLearn('Ozeanien')">🌏 Ozeanien</button>
+
+<button onclick="backMenu()">⬅️ Zurück</button>
+
+</div>
+
+<!-- GAME -->
+<div id="game" class="hidden">
+<p id="info"></p>
+<img id="img" style="max-height:140px">
+
+<div id="answers" class="grid">
+<button onclick="check(this)"></button>
+<button onclick="check(this)"></button>
+<button onclick="check(this)"></button>
+<button onclick="check(this)"></button>
+</div>
+
+<button onclick="joker()">🃏 Joker (50)</button>
+<button onclick="backMenu()">⬅️ Menü</button>
+</div>
+
+<!-- LEARN -->
+<div id="learn" class="hidden scroll">
+<input placeholder="🔍 suchen..." oninput="search(this.value)">
+<table id="table"></table>
+<button onclick="backMenu()">⬅️ Menü</button>
+</div>
+
+</div>
+
+<script>
+
+// 🌍 LÄNDER (hier kannst du deine komplette Liste einsetzen!)
+const countries = [
+
+/* EUROPA */
+{n:"Albanien",c:"al",cap:"Tirana",r:"Europa"},
+{n:"Andorra",c:"ad",cap:"Andorra la Vella",r:"Europa"},
+{n:"Belarus",c:"by",cap:"Minsk",r:"Europa"},
+{n:"Belgien",c:"be",cap:"Brüssel",r:"Europa"},
+{n:"Bosnien und Herzegowina",c:"ba",cap:"Sarajevo",r:"Europa"},
+{n:"Bulgarien",c:"bg",cap:"Sofia",r:"Europa"},
+{n:"Dänemark",c:"dk",cap:"Kopenhagen",r:"Europa"},
+{n:"Deutschland",c:"de",cap:"Berlin",r:"Europa"},
+{n:"Estland",c:"ee",cap:"Tallinn",r:"Europa"},
+{n:"Finnland",c:"fi",cap:"Helsinki",r:"Europa"},
+{n:"Frankreich",c:"fr",cap:"Paris",r:"Europa"},
+{n:"Griechenland",c:"gr",cap:"Athen",r:"Europa"},
+{n:"Irland",c:"ie",cap:"Dublin",r:"Europa"},
+{n:"Island",c:"is",cap:"Reykjavík",r:"Europa"},
+{n:"Italien",c:"it",cap:"Rom",r:"Europa"},
+{n:"Kosovo",c:"xk",cap:"Pristina",r:"Europa"},
+{n:"Kroatien",c:"hr",cap:"Zagreb",r:"Europa"},
+{n:"Lettland",c:"lv",cap:"Riga",r:"Europa"},
+{n:"Liechtenstein",c:"li",cap:"Vaduz",r:"Europa"},
+{n:"Litauen",c:"lt",cap:"Vilnius",r:"Europa"},
+{n:"Luxemburg",c:"lu",cap:"Luxemburg",r:"Europa"},
+{n:"Malta",c:"mt",cap:"Valletta",r:"Europa"},
+{n:"Moldau",c:"md",cap:"Chișinău",r:"Europa"},
+{n:"Monaco",c:"mc",cap:"Monaco",r:"Europa"},
+{n:"Montenegro",c:"me",cap:"Podgorica",r:"Europa"},
+{n:"Niederlande",c:"nl",cap:"Amsterdam",r:"Europa"},
+{n:"Nordmazedonien",c:"mk",cap:"Skopje",r:"Europa"},
+{n:"Norwegen",c:"no",cap:"Oslo",r:"Europa"},
+{n:"Österreich",c:"at",cap:"Wien",r:"Europa"},
+{n:"Polen",c:"pl",cap:"Warschau",r:"Europa"},
+{n:"Portugal",c:"pt",cap:"Lissabon",r:"Europa"},
+{n:"Rumänien",c:"ro",cap:"Bukarest",r:"Europa"},
+{n:"Russland",c:"ru",cap:"Moskau",r:"Europa"},
+{n:"San Marino",c:"sm",cap:"San Marino",r:"Europa"},
+{n:"Schweden",c:"se",cap:"Stockholm",r:"Europa"},
+{n:"Schweiz",c:"ch",cap:"Bern",r:"Europa"},
+{n:"Serbien",c:"rs",cap:"Belgrad",r:"Europa"},
+{n:"Slowakei",c:"sk",cap:"Bratislava",r:"Europa"},
+{n:"Slowenien",c:"si",cap:"Ljubljana",r:"Europa"},
+{n:"Spanien",c:"es",cap:"Madrid",r:"Europa"},
+{n:"Tschechien",c:"cz",cap:"Prag",r:"Europa"},
+{n:"Ukraine",c:"ua",cap:"Kiew",r:"Europa"},
+{n:"Ungarn",c:"hu",cap:"Budapest",r:"Europa"},
+{n:"Vatikanstadt",c:"va",cap:"Vatikanstadt",r:"Europa"},
+{n:"Vereinigtes Königreich",c:"gb",cap:"London",r:"Europa"},
+{n:"Zypern",c:"cy",cap:"Nikosia",r:"Europa"},
+
+/* ASIEN */
+{n:"Afghanistan",c:"af",cap:"Kabul",r:"Asien"},
+{n:"Armenien",c:"am",cap:"Jerewan",r:"Asien"},
+{n:"Aserbaidschan",c:"az",cap:"Baku",r:"Asien"},
+{n:"Bahrain",c:"bh",cap:"Manama",r:"Asien"},
+{n:"Bangladesch",c:"bd",cap:"Dhaka",r:"Asien"},
+{n:"Bhutan",c:"bt",cap:"Thimphu",r:"Asien"},
+{n:"Brunei",c:"bn",cap:"Bandar Seri Begawan",r:"Asien"},
+{n:"China",c:"cn",cap:"Peking",r:"Asien"},
+{n:"Georgien",c:"ge",cap:"Tiflis",r:"Asien"},
+{n:"Indien",c:"in",cap:"Neu-Delhi",r:"Asien"},
+{n:"Indonesien",c:"id",cap:"Jakarta",r:"Asien"},
+{n:"Iran",c:"ir",cap:"Teheran",r:"Asien"},
+{n:"Irak",c:"iq",cap:"Bagdad",r:"Asien"},
+{n:"Israel",c:"il",cap:"Jerusalem",r:"Asien"},
+{n:"Japan",c:"jp",cap:"Tokio",r:"Asien"},
+{n:"Jordanien",c:"jo",cap:"Amman",r:"Asien"},
+{n:"Kasachstan",c:"kz",cap:"Astana",r:"Asien"},
+{n:"Katar",c:"qa",cap:"Doha",r:"Asien"},
+{n:"Kuwait",c:"kw",cap:"Kuwait-Stadt",r:"Asien"},
+{n:"Kirgisistan",c:"kg",cap:"Bischkek",r:"Asien"},
+{n:"Laos",c:"la",cap:"Vientiane",r:"Asien"},
+{n:"Libanon",c:"lb",cap:"Beirut",r:"Asien"},
+{n:"Malaysia",c:"my",cap:"Kuala Lumpur",r:"Asien"},
+{n:"Malediven",c:"mv",cap:"Malé",r:"Asien"},
+{n:"Mongolei",c:"mn",cap:"Ulaanbaatar",r:"Asien"},
+{n:"Myanmar",c:"mm",cap:"Naypyidaw",r:"Asien"},
+{n:"Nepal",c:"np",cap:"Kathmandu",r:"Asien"},
+{n:"Nordkorea",c:"kp",cap:"Pjöngjang",r:"Asien"},
+{n:"Oman",c:"om",cap:"Maskat",r:"Asien"},
+{n:"Pakistan",c:"pk",cap:"Islamabad",r:"Asien"},
+{n:"Philippinen",c:"ph",cap:"Manila",r:"Asien"},
+{n:"Saudi-Arabien",c:"sa",cap:"Riad",r:"Asien"},
+{n:"Singapur",c:"sg",cap:"Singapur",r:"Asien"},
+{n:"Sri Lanka",c:"lk",cap:"Sri Jayawardenepura Kotte",r:"Asien"},
+{n:"Südkorea",c:"kr",cap:"Seoul",r:"Asien"},
+{n:"Syrien",c:"sy",cap:"Damaskus",r:"Asien"},
+{n:"Tadschikistan",c:"tj",cap:"Duschanbe",r:"Asien"},
+{n:"Thailand",c:"th",cap:"Bangkok",r:"Asien"},
+{n:"Timor-Leste",c:"tl",cap:"Dili",r:"Asien"},
+{n:"Türkei",c:"tr",cap:"Ankara",r:"Asien"},
+{n:"Turkmenistan",c:"tm",cap:"Aschgabat",r:"Asien"},
+{n:"Usbekistan",c:"uz",cap:"Taschkent",r:"Asien"},
+{n:"Vereinigte Arabische Emirate",c:"ae",cap:"Abu Dhabi",r:"Asien"},
+{n:"Vietnam",c:"vn",cap:"Hanoi",r:"Asien"},
+{n:"Jemen",c:"ye",cap:"Sanaa",r:"Asien"},
+
+/* AFRIKA */
+{n:"Algerien",c:"dz",cap:"Algier",r:"Afrika"},
+{n:"Angola",c:"ao",cap:"Luanda",r:"Afrika"},
+{n:"Benin",c:"bj",cap:"Porto-Novo",r:"Afrika"},
+{n:"Botswana",c:"bw",cap:"Gaborone",r:"Afrika"},
+{n:"Burkina Faso",c:"bf",cap:"Ouagadougou",r:"Afrika"},
+{n:"Burundi",c:"bi",cap:"Gitega",r:"Afrika"},
+{n:"Cabo Verde",c:"cv",cap:"Praia",r:"Afrika"},
+{n:"Dschibuti",c:"dj",cap:"Dschibuti",r:"Afrika"},
+{n:"Ägypten",c:"eg",cap:"Kairo",r:"Afrika"},
+{n:"Äquatorialguinea",c:"gq",cap:"Malabo",r:"Afrika"},
+{n:"Eritrea",c:"er",cap:"Asmara",r:"Afrika"},
+{n:"Eswatini",c:"sz",cap:"Mbabane",r:"Afrika"},
+{n:"Äthiopien",c:"et",cap:"Addis Abeba",r:"Afrika"},
+{n:"Gabun",c:"ga",cap:"Libreville",r:"Afrika"},
+{n:"Gambia",c:"gm",cap:"Banjul",r:"Afrika"},
+{n:"Ghana",c:"gh",cap:"Accra",r:"Afrika"},
+{n:"Guinea",c:"gn",cap:"Conakry",r:"Afrika"},
+{n:"Guinea-Bissau",c:"gw",cap:"Bissau",r:"Afrika"},
+{n:"Kamerun",c:"cm",cap:"Yaoundé",r:"Afrika"},
+{n:"Kenia",c:"ke",cap:"Nairobi",r:"Afrika"},
+{n:"Komoren",c:"km",cap:"Moroni",r:"Afrika"},
+{n:"Kongo",c:"cg",cap:"Brazzaville",r:"Afrika"},
+{n:"DR Kongo",c:"cd",cap:"Kinshasa",r:"Afrika"},
+{n:"Lesotho",c:"ls",cap:"Maseru",r:"Afrika"},
+{n:"Liberia",c:"lr",cap:"Monrovia",r:"Afrika"},
+{n:"Libyen",c:"ly",cap:"Tripolis",r:"Afrika"},
+{n:"Madagaskar",c:"mg",cap:"Antananarivo",r:"Afrika"},
+{n:"Malawi",c:"mw",cap:"Lilongwe",r:"Afrika"},
+{n:"Mali",c:"ml",cap:"Bamako",r:"Afrika"},
+{n:"Marokko",c:"ma",cap:"Rabat",r:"Afrika"},
+{n:"Mauretanien",c:"mr",cap:"Nouakchott",r:"Afrika"},
+{n:"Mauritius",c:"mu",cap:"Port Louis",r:"Afrika"},
+{n:"Mosambik",c:"mz",cap:"Maputo",r:"Afrika"},
+{n:"Namibia",c:"na",cap:"Windhoek",r:"Afrika"},
+{n:"Niger",c:"ne",cap:"Niamey",r:"Afrika"},
+{n:"Nigeria",c:"ng",cap:"Abuja",r:"Afrika"},
+{n:"Ruanda",c:"rw",cap:"Kigali",r:"Afrika"},
+{n:"Sambia",c:"zm",cap:"Lusaka",r:"Afrika"},
+{n:"Sao Tome und Principe",c:"st",cap:"São Tomé",r:"Afrika"},
+{n:"Senegal",c:"sn",cap:"Dakar",r:"Afrika"},
+{n:"Seychellen",c:"sc",cap:"Victoria",r:"Afrika"},
+{n:"Sierra Leone",c:"sl",cap:"Freetown",r:"Afrika"},
+{n:"Simbabwe",c:"zw",cap:"Harare",r:"Afrika"},
+{n:"Somalia",c:"so",cap:"Mogadischu",r:"Afrika"},
+{n:"Südafrika",c:"za",cap:"Pretoria",r:"Afrika"},
+{n:"Südsudan",c:"ss",cap:"Juba",r:"Afrika"},
+{n:"Sudan",c:"sd",cap:"Khartum",r:"Afrika"},
+{n:"Tansania",c:"tz",cap:"Dodoma",r:"Afrika"},
+{n:"Togo",c:"tg",cap:"Lomé",r:"Afrika"},
+{n:"Tunesien",c:"tn",cap:"Tunis",r:"Afrika"},
+{n:"Uganda",c:"ug",cap:"Kampala",r:"Afrika"},
+{n:"Zentralafrikanische Republik",c:"cf",cap:"Bangui",r:"Afrika"},
+
+/* NORDAMERIKA */
+{n:"Antigua und Barbuda",c:"ag",cap:"Saint John's",r:"Nordamerika"},
+{n:"Bahamas",c:"bs",cap:"Nassau",r:"Nordamerika"},
+{n:"Barbados",c:"bb",cap:"Bridgetown",r:"Nordamerika"},
+{n:"Belize",c:"bz",cap:"Belmopan",r:"Nordamerika"},
+{n:"Costa Rica",c:"cr",cap:"San José",r:"Nordamerika"},
+{n:"Dominica",c:"dm",cap:"Roseau",r:"Nordamerika"},
+{n:"Dominikanische Republik",c:"do",cap:"Santo Domingo",r:"Nordamerika"},
+{n:"El Salvador",c:"sv",cap:"San Salvador",r:"Nordamerika"},
+{n:"Grenada",c:"gd",cap:"Saint George's",r:"Nordamerika"},
+{n:"Guatemala",c:"gt",cap:"Guatemala-Stadt",r:"Nordamerika"},
+{n:"Haiti",c:"ht",cap:"Port-au-Prince",r:"Nordamerika"},
+{n:"Honduras",c:"hn",cap:"Tegucigalpa",r:"Nordamerika"},
+{n:"Jamaika",c:"jm",cap:"Kingston",r:"Nordamerika"},
+{n:"Kanada",c:"ca",cap:"Ottawa",r:"Nordamerika"},
+{n:"Kuba",c:"cu",cap:"Havanna",r:"Nordamerika"},
+{n:"Mexiko",c:"mx",cap:"Mexiko-Stadt",r:"Nordamerika"},
+{n:"Nicaragua",c:"ni",cap:"Managua",r:"Nordamerika"},
+{n:"Panama",c:"pa",cap:"Panama-Stadt",r:"Nordamerika"},
+{n:"St. Kitts und Nevis",c:"kn",cap:"Basseterre",r:"Nordamerika"},
+{n:"St. Lucia",c:"lc",cap:"Castries",r:"Nordamerika"},
+{n:"St. Vincent und die Grenadinen",c:"vc",cap:"Kingstown",r:"Nordamerika"},
+{n:"Trinidad und Tobago",c:"tt",cap:"Port of Spain",r:"Nordamerika"},
+{n:"USA",c:"us",cap:"Washington D.C.",r:"Nordamerika"},
+
+/* SÜDAMERIKA */
+{n:"Argentinien",c:"ar",cap:"Buenos Aires",r:"Südamerika"},
+{n:"Bolivien",c:"bo",cap:"Sucre",r:"Südamerika"},
+{n:"Brasilien",c:"br",cap:"Brasília",r:"Südamerika"},
+{n:"Chile",c:"cl",cap:"Santiago",r:"Südamerika"},
+{n:"Ecuador",c:"ec",cap:"Quito",r:"Südamerika"},
+{n:"Guyana",c:"gy",cap:"Georgetown",r:"Südamerika"},
+{n:"Kolumbien",c:"co",cap:"Bogotá",r:"Südamerika"},
+{n:"Paraguay",c:"py",cap:"Asunción",r:"Südamerika"},
+{n:"Peru",c:"pe",cap:"Lima",r:"Südamerika"},
+{n:"Suriname",c:"sr",cap:"Paramaribo",r:"Südamerika"},
+{n:"Uruguay",c:"uy",cap:"Montevideo",r:"Südamerika"},
+{n:"Venezuela",c:"ve",cap:"Caracas",r:"Südamerika"},
+
+/* OZEANIEN */
+{n:"Australien",c:"au",cap:"Canberra",r:"Ozeanien"},
+{n:"Fidschi",c:"fj",cap:"Suva",r:"Ozeanien"},
+{n:"Kiribati",c:"ki",cap:"Tarawa",r:"Ozeanien"},
+{n:"Marshallinseln",c:"mh",cap:"Majuro",r:"Ozeanien"},
+{n:"Mikronesien",c:"fm",cap:"Palikir",r:"Ozeanien"},
+{n:"Nauru",c:"nr",cap:"Yaren",r:"Ozeanien"},
+{n:"Neuseeland",c:"nz",cap:"Wellington",r:"Ozeanien"},
+{n:"Palau",c:"pw",cap:"Ngerulmud",r:"Ozeanien"},
+{n:"Papua-Neuguinea",c:"pg",cap:"Port Moresby",r:"Ozeanien"},
+{n:"Samoa",c:"ws",cap:"Apia",r:"Ozeanien"},
+{n:"Salomonen",c:"sb",cap:"Honiara",r:"Ozeanien"},
+{n:"Tonga",c:"to",cap:"Nukuʻalofa",r:"Ozeanien"},
+{n:"Tuvalu",c:"tv",cap:"Funafuti",r:"Ozeanien"},
+{n:"Vanuatu",c:"vu",cap:"Port Vila",r:"Ozeanien"}
+
+];// STATE
+let s={
+coins:parseInt(localStorage.getItem("coins"))||0,
+mode:"flags",
+region:"Alle",
+dailyDone:localStorage.getItem("daily")==new Date().toDateString(),
+dailyCount:0,
+dailyWrong:false
+};
+
+function up(){document.getElementById("coins").innerText="💰 "+s.coins;}
+
+function setFlag(img,code){
+img.src="flags/"+code+".png";
+img.onerror=()=>img.src="https://flagcdn.com/w160/"+code+".png";
+}
+
+// MENU
+function backMenu(){
+document.querySelectorAll("#menu,#select,#learnSelect,#game,#learn")
+.forEach(e=>e.classList.add("hidden"));
+document.getElementById("menu").classList.remove("hidden");
+}
+
+function openSelect(){
+document.getElementById("menu").classList.add("hidden");
+document.getElementById("select").classList.remove("hidden");
+}
+
+function openLearnSelect(){
+document.getElementById("menu").classList.add("hidden");
+document.getElementById("learnSelect").classList.remove("hidden");
+}
+
+function setMode(m){s.mode=m;}
+
+// QUIZ
+function startQuizRegion(r){
+s.region=r;
+document.getElementById("select").classList.add("hidden");
+document.getElementById("game").classList.remove("hidden");
+next();
+}
+
+function next(){
+
+    // 🌍 Länderliste nach Region filtern
+    let list = s.region == "Alle"
+        ? countries
+        : countries.filter(c => c.r == s.region);
+
+    // zufälliges Land
+    let c = list[Math.floor(Math.random() * list.length)];
+    s.curr = c;
+
+    // 🎮 Anzeige je nach Modus
+    if(s.mode == "flags"){
+        img.style.display = "block";
+        setFlag(img, c.c);
+        document.getElementById("info").innerText = "🚩 Welches Land ist das?";
+    } else {
+        img.style.display = "none";
+        document.getElementById("info").innerText = "🏙️ Hauptstadt: " + c.cap;
+    }
+
+    // ✅ richtige Antwort (immer LAND!)
+    let correct = c.n;
+
+    // 🧠 Antwortmöglichkeiten
+    let opts = [correct];
+
+    while(opts.length < 4){
+        let r = list[Math.floor(Math.random() * list.length)];
+        if(!opts.includes(r.n)){
+            opts.push(r.n);
+        }
+    }
+
+    // 🔀 mischen
+    opts.sort(() => Math.random() - 0.5);
+
+    // 🎯 Buttons setzen
+    document.querySelectorAll("#answers button").forEach((b, i) => {
+        b.innerText = opts[i];
+        b.className = "";
+        b.style.visibility = "visible";
+    });
+
+    // 💰 Anzeige
+    document.getElementById("info").innerText += "   |   💰 " + s.coins;
+}
+// CHECK
+function check(b){
+
+    let correct = s.curr.n;
+
+    if(b.innerText === correct){
+        b.classList.add("correct");
+        s.score++;
+        s.coins += 5;
+    } else {
+        b.classList.add("wrong");
+        alert("Falsch! Richtig war: " + correct);
+    }
+
+    localStorage.setItem("coins", s.coins);
+    up();
+
+    setTimeout(next, 800);
+
+} // 👈 HIER ENDET DIE FUNKTION
+
+function startDaily(){
+
+    if(s.dailyDone){
+        alert("Heute schon gespielt!");
+        return;
+    }
+
+    s.dailyMode = true;
+    s.dailyCount = 0;
+    s.dailyWrong = false;
+
+    // 👉 Standard: Flaggen + Welt
+    s.mode = "flags";
+    s.region = "Alle";
+
+    document.getElementById("menu").classList.add("hidden");
+    document.getElementById("game").classList.remove("hidden");
+
+    next();
+}
+function endDaily(){
+s.dailyMode=false;
+if(!s.dailyWrong){
+s.coins+=50;
+alert("Perfekt! +50 Coins");
+}
+localStorage.setItem("coins",s.coins);
+localStorage.setItem("daily",new Date().toDateString());
+backMenu();
+}
+
+// JOKER
+function joker(){
+if(s.coins<50)return alert("Nicht genug Coins");
+s.coins-=50;
+up();
+
+let correct=s.mode=="flags"?s.curr.n:s.curr.cap;
+let wrong=[...document.querySelectorAll("#answers button")]
+.filter(b=>b.innerText!=correct);
+
+wrong[0].style.visibility="hidden";
+wrong[1].style.visibility="hidden";
+}
+
+// LEARN
+function startLearn(r){
+document.getElementById("learnSelect").classList.add("hidden");
+document.getElementById("learn").classList.remove("hidden");
+
+let list=r=="Alle"?countries:countries.filter(c=>c.r==r);
+
+let html="<tr><th>Flagge</th><th>Land</th><th>Hauptstadt</th></tr>";
+
+list.forEach(c=>{
+html+=`<tr>
+<td><img id="f-${c.c}"></td>
+<td>${c.n}</td>
+<td>${c.cap}</td>
+</tr>`;
+});
+
+table.innerHTML=html;
+
+list.forEach(c=>setFlag(document.getElementById("f-"+c.c),c.c));
+}
+
+// SEARCH
+function search(q){
+q=q.toLowerCase();
+document.querySelectorAll("#table tr").forEach((r,i)=>{
+if(i==0)return;
+r.style.display=r.innerText.toLowerCase().includes(q)?"":"none";
+});
+}
+
+up();
+
+function startMode(mode){
+    s.mode = mode;
+
+    // 👉 direkt starten (beste Lösung)
+    startQuizRegion("Alle");
+}
+
+</script>
+</body>
